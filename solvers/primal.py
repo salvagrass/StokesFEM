@@ -1,10 +1,16 @@
-from solvers.base import StokesSolver,StokesSolution
+from solvers.base import StokesSolver,StokesSolution,MethodType
 from problems.base import StokesProblemData
 from typing import Any
 from abc import abstractmethod
 from fenics import *
 
 class StandardPrimalSolver(StokesSolver):
+    """Abstract base class for standard mixed velocity-pressure primal Stokes formulations.
+
+    Implements the template method pattern: subclasses define specific inf-sup
+    stable discrete function spaces (_construct_spaces), while this class
+    assembles and solves the continuous Galerkin variational problem.
+    """
     def __init__(self, fluid_model: Any):
         super().__init__(fluid_model)
 
@@ -13,6 +19,15 @@ class StandardPrimalSolver(StokesSolver):
         pass
 
     def solve(self,data: StokesProblemData,mu: Function) -> StokesSolution:
+        """Assemble and solve the continuous Galerkin mixed Stokes variational problem.
+
+        Args:
+            data (StokesProblemData): Computational domain, boundary markers, and data.
+            mu (Function): Dynamic viscosity coefficient field.
+
+        Returns:
+            StokesSolution: Solution container holding velocity, pressure, and the raw state.
+        """
         X = self._construct_spaces(data.mesh)
         bcs = []
         for id,bc_values in data.dirichlet_bcs.items():
@@ -23,19 +38,20 @@ class StandardPrimalSolver(StokesSolver):
             
         sol = Function(X)
         
-        lhs = mu*(inner(grad(u),grad(v))*dx) - div(v)*p*dx + div(u)*q*dx
+        lhs = 2*mu*(inner(sym(grad(u)),sym(grad(v)))*dx) - div(v)*p*dx + div(u)*q*dx
         rhs = dot(data.forcing_term,v)*dx
         
         ds = Measure('ds',subdomain_data=data.boundary_markers,domain=data.mesh)
         
-        for id,bc_value in data.neumann_bcs.items():
-                rhs += dot(bc_value,v)*ds(id)
+        for marker_id,bc_value in data.neumann_bcs.items():
+                rhs += dot(bc_value,v)*ds(marker_id)
         solve(lhs==rhs,sol,bcs)
         sol_u, sol_p = sol.split(deepcopy=True)
-        return StokesSolution(sol_u,sol_p,sol)
+        return StokesSolution(sol_u,sol_p,sol,self.method_name)
 
 
 class TaylorHoodSolver(StandardPrimalSolver):
+    method_name = MethodType.TH
     def __init__(self, fluid_model: Any, degree: int = 2):
         super().__init__(fluid_model)
         self.degree = degree
@@ -46,6 +62,7 @@ class TaylorHoodSolver(StandardPrimalSolver):
         return FunctionSpace(mesh, MixedElement((V,Q)))
 
 class MINISolver(StandardPrimalSolver):
+    method_name = MethodType.MINI
     def _construct_spaces(self, mesh):
         P1 = FiniteElement('CG', mesh.ufl_cell(), 1)
         B = FiniteElement('Bubble', mesh.ufl_cell(), mesh.topology().dim() + 1)
@@ -54,6 +71,7 @@ class MINISolver(StandardPrimalSolver):
         return FunctionSpace(mesh,MixedElement((V,Q)))
 
 class KSSolver(StandardPrimalSolver):
+    method_name = MethodType.KS
     def _construct_spaces(self, mesh: Mesh) -> FunctionSpace:
         V1 = FiniteElement("CR", mesh.ufl_cell(), 1)
         V2 = FiniteElement("CG", mesh.ufl_cell(), 1)
@@ -63,6 +81,7 @@ class KSSolver(StandardPrimalSolver):
         return FunctionSpace(mesh, MixedElement([V, Q]))
 
 class SIPGSolver(StokesSolver):
+    method_name = None
     def __init__(self, fluid_model,degree: int = 1, alpha_coeff : float = 6.1, beta_coeff: float = 2.1 ):
         super().__init__(fluid_model)
         self.degree = degree

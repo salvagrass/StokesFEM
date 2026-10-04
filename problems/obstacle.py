@@ -1,6 +1,6 @@
 from fenics import *
 from mshr import *
-from .base import StokesProblemData
+from problems.base import StokesProblemData
 
 def generate_problem(n: int=20) -> StokesProblemData:
     """Generates the computational domain, mesh, and boundary conditions for a 2D Stokes flow.
@@ -45,9 +45,17 @@ def generate_problem(n: int=20) -> StokesProblemData:
         2: u_rigid
     }
 
-    traction_vector = Constant((0.0,0.0))
+    traction_vec = Constant((0.0,0.0))
     neumann_bcs = {
-        3: traction_vector
+        3: traction_vec
     }
 
-    return StokesProblemData(mesh,boundary_markers,dirichlet_bcs,neumann_bcs,Constant((0.0, 0.0)))
+    mixed_neumann_bcs = {3: [Constant((0.0,0.0)),Constant((0.0,0.0))]}
+
+    return StokesProblemData(mesh,
+                             boundary_markers,
+                             dirichlet_bcs,
+                             neumann_bcs,
+                             mixed_neumann_bcs,
+                             Constant((0.0, 0.0))
+                             )
