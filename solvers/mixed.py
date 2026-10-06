@@ -5,8 +5,9 @@ from fenics import *
 from ufl.coefficient import Coefficient
 from ufl.core.expr import Expr
 
-from problems.base import StokesProblemData
-from solvers.base import MethodType, StokesSolution, StokesSolver
+from problems import StokesProblemData
+from common import MethodType
+from solvers.base import StokesSolution, StokesSolver
 
 
 class MixedSolver(StokesSolver):
@@ -104,7 +105,7 @@ class MixedSolver(StokesSolver):
 
         p_res = self._extract_pressure(data.mesh, p_expr)
         return StokesSolution(
-            u=u_res, p=p_res, raw_solution=sol, method_name=self.method_name
+            u=u_res, p=p_res, T=sigma_res, raw_solution=sol, method_name=self.method_name
         )
 
     @abstractmethod
@@ -176,7 +177,7 @@ class RTCGSolver(MixedSolver):
         return FunctionSpace(mesh, MixedElement([S1, S2, U, Q]))
 
     def _extract_pressure(self, mesh: Mesh, p_expr: Expr) -> Function:
-        p_space = FunctionSpace(mesh, "CG", self.degree - 1)
+        p_space = FunctionSpace(mesh, "DG", self.degree)
         return project(p_expr, p_space)
 
 
@@ -202,5 +203,5 @@ class HybridSolver(MixedSolver):
         return FunctionSpace(mesh, MixedElement([S1, S2, U, Q]))
 
     def _extract_pressure(self, mesh: Mesh, p_expr: Expr) -> Function:
-        p_space = FunctionSpace(mesh, "CG", 1)
+        p_space = FunctionSpace(mesh, "DG", 1)
         return project(p_expr, p_space)

@@ -1,8 +1,9 @@
 from typing import Optional,Any
-
-from solvers.base import MethodType,StokesSolver
+from common import MethodType
+from solvers.base import StokesSolver
 from solvers.mixed import AFWSolver, HybridSolver, RTCGSolver
 from solvers.primal import KSSolver, MINISolver, TaylorHoodSolver
+from solvers.augumented import AugumentedSolver
 
 
 class SolverFactory:
@@ -20,6 +21,7 @@ class SolverFactory:
             fluid, degree=kw.get("degree", 2)
         ),
         MethodType.HYBRID: lambda fluid, **kw: HybridSolver(fluid),
+        MethodType.AUG : lambda fluid,**kw: AugumentedSolver(fluid,degree=kw.get("degree",2))
     }
 
     @classmethod

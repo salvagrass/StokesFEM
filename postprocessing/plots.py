@@ -51,7 +51,7 @@ def plot_combined(solution: StokesSolution,
                   wireframe: bool = False
                   ):
     nrows, ncols = (1, 2) if layout == "horizontal" else (2, 1)
-    figsize = (12, 5) if layout == "horizontal" else (6, 10)
+    figsize = (12, 5) if layout == "horizontal" else (6, 5)
     
     fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
     if mode == 'quiver':
@@ -59,7 +59,10 @@ def plot_combined(solution: StokesSolution,
     elif mode == 'streamlines':
         plot_streamlines(solution,ax=axes[0],title=f"{title_prefix} Streamlines",cmap=cmaps[0])
     plot_pressure(solution, ax=axes[1], title=f"{title_prefix} Pressure Plot",cmap=cmaps[1],wireframe=wireframe)
-    fig.tight_layout(pad=3.0)
+    if layout=='horizontal':
+        fig.tight_layout(w_pad=3.0)
+    else:
+        fig.tight_layout(h_pad=3.0)
     return fig,axes
 
 def plot_streamlines(

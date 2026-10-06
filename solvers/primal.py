@@ -1,5 +1,6 @@
-from solvers.base import StokesSolver,StokesSolution,MethodType
-from problems.base import StokesProblemData
+from problems import StokesProblemData
+from common import MethodType
+from solvers.base import StokesSolver,StokesSolution
 from typing import Any
 from abc import abstractmethod
 from fenics import *
@@ -47,7 +48,9 @@ class StandardPrimalSolver(StokesSolver):
                 rhs += dot(bc_value,v)*ds(marker_id)
         solve(lhs==rhs,sol,bcs)
         sol_u, sol_p = sol.split(deepcopy=True)
-        return StokesSolution(sol_u,sol_p,sol,self.method_name)
+        I = Identity(data.mesh.geometric_dimension())
+        sol_T = -sol_p*I + 2*mu*sym(grad(sol_u))
+        return StokesSolution(sol_u,sol_p,sol_T,sol,self.method_name)
 
 
 class TaylorHoodSolver(StandardPrimalSolver):

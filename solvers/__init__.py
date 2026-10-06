@@ -6,5 +6,4 @@ __all__ = [
     "StokesSolver",
     "StokesSolution",
     "SolverFactory",
-    "MethodType",
 ]

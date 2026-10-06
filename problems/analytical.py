@@ -36,7 +36,7 @@ def generate_problem(n: int = 20) -> StokesProblemData:
     CompiledSubDomain("on_boundary and (near(x[0],0) or near(x[1],0))").mark(boundary_markers,3)
 
     # Load analytical solution fields, body force, and standard surface tractions
-    u_exact, p_exact, forcing_term, gNt,gNr = _compute_data()
+    u_exact, p_exact,T_exact, forcing_term, gNt,gNr = _compute_data()
 
     dirichlet_bcs = {
         3: u_exact
@@ -79,7 +79,8 @@ def generate_problem(n: int = 20) -> StokesProblemData:
         mixed_neumann_bcs,
         forcing_term,
         u_exact,
-        p_exact
+        p_exact,
+        T_exact
     )
     
 def _compute_data():
@@ -90,6 +91,12 @@ def _compute_data():
     p_exact = Expression(
             '-0.25 * (cos(2*pi*x[0]) + cos(2*pi*x[1]))',
             degree=6)
+    T_exact = Expression((
+    ('2*pi*sin(pi*x[0])*sin(pi*x[1]) + 0.25*(cos(2*pi*x[0]) + cos(2*pi*x[1]))', 
+     'pi*(cos(pi*x[1]) - cos(pi*x[0]))'),
+    ('pi*(cos(pi*x[1]) - cos(pi*x[0]))', 
+     '-2*pi*sin(pi*x[0])*sin(pi*x[1]) + 0.25*(cos(2*pi*x[0]) + cos(2*pi*x[1]))')
+), degree=6)
     f = Expression((
             '-2*pi*pi*cos(pi*x[0])*sin(pi*x[1]) + 0.5*pi*sin(2*pi*x[0]) + pi*pi*sin(pi*x[1])',
             '2*pi*pi*sin(pi*x[0])*cos(pi*x[1]) + 0.5*pi*sin(2*pi*x[1]) - pi*pi*sin(pi*x[0])'
@@ -104,4 +111,4 @@ def _compute_data():
             '0.25 * (cos(2*pi*x[0]) + cos(2*pi*x[1]))', 
             'pi * (cos(pi*x[1]) + 1.0)'  
         ), degree=2)
-    return u_exact,p_exact,f,gNt,gNr
+    return u_exact,p_exact,T_exact,f,gNt,gNr

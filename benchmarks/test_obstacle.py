@@ -35,7 +35,7 @@ def test_obstacle():
             solution=solution,
             mode='quiver',
             title_prefix= f"{method} - ",
-            layout='horizontal'
+            layout='vertical'
             )
 
         print(f"Saving the graph for {method} in {OUTPUT_DIR}")

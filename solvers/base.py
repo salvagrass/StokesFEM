@@ -1,36 +1,10 @@
-from problems.base import StokesProblemData
+from problems import StokesProblemData
+from common import MethodType
 from dataclasses import dataclass
 from ufl.coefficient import Coefficient
+from ufl.core.expr import Expr
 from abc import ABC,abstractmethod
-from enum import Enum
 from typing import Any
-
-
-class MethodType(str, Enum):
-    """Enumeration of supported mixed finite element spatial discretizations.
-
-    Inherits from (str, Enum) to ensure seamless serialization, terminal output,
-    and dictionary key usage across metrics and plotting modules.
-
-    Attributes:
-        TH: Taylor-Hood mixed element family (P_{k} / P_{k-1}).
-        MINI: MINI element with cubic bubble enrichment on velocity (P_1^b / P_1).
-        KS: Kouhia-Stenberg formulation with asymmetric stress/velocity fields.
-        AFW: Arnold-Falk-Winther stable mixed stress-velocity pair.
-        RTCG: Raviart-Thomas velocity with discontinuous pressure (RT_k / DG_{k-1}).
-        HYBRID: Hybridized mixed formulation with face Lagrange multipliers.
-    """
-
-    TH = "Taylor-Hood"
-    MINI = "Mini"
-    KS = "Kouhia-Stenberg"
-    AFW = "Arnold-Falk-Winther"
-    RTCG = "Raviart-Thomas"
-    HYBRID = "Hybrid"
-
-    def __str__(self) -> str:
-        return self.value
-
 
 
 class StokesSolver(ABC):
@@ -84,5 +58,6 @@ class StokesSolution:
     """
     u: Coefficient
     p: Coefficient
-    raw_solution: Coefficient
+    T: Coefficient
+    raw_solution: Expr
     method_name: MethodType

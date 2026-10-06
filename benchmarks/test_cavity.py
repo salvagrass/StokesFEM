@@ -20,7 +20,7 @@ def test_cavity():
     os.makedirs(OUTPUT_PATH,exist_ok=True)
 
 
-    for method in [MethodType.TH, MethodType.AFW,MethodType.RTCG]:
+    for method in [MethodType.HYBRID, MethodType.AFW,MethodType.RTCG]:
         print(f"--- Computing the solution for {method} ---")
         print("Creating the factory")
         solver = factory.create_solver(method=method,fluid_model=None,degree = 3)

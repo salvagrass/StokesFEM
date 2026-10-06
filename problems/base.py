@@ -36,3 +36,4 @@ class StokesProblemData:
 
     u_exact: Optional[Coefficient] = None
     p_exact: Optional[Coefficient] = None
+    T_exact: Optional[Coefficient] = None

@@ -11,5 +11,5 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["problems*", "solvers*", "postprocessing*"]
+include = ["problems*", "solvers*", "postprocessing*","common*"]
 exclude = ["results*", "benchmarks*"]
