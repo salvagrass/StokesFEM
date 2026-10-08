@@ -1,7 +1,6 @@
 name: fenics_legacy
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python=3.8
   - fenics=2019.1.0
