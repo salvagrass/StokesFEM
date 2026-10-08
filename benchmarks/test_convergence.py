@@ -17,11 +17,11 @@ def test_convergence():
     os.makedirs(OUTPUT_DIR,exist_ok=True)
 
     # Preparing the list of methods
-    methods = [MethodType.TH,MethodType.MINI,MethodType.KS,MethodType.AFW]
+    methods = [MethodType.TH,MethodType.HYBRID,MethodType.AFW,MethodType.AUG]
 
     # Preparing the plotter
-    plotter = ConvergencePlotter(methods,'h',"MMS",normalized=True)
-
+    plotter = ConvergencePlotter('h',"MMS",normalized=True)
+    studies = []
     for method in methods:
         print(f"--- Setting up the problem for {method} ---")
         study = ConvergenceStudy(method)
@@ -40,20 +40,15 @@ def test_convergence():
             study.add_error_data(errors,1/n)
         # Printing the convergence EOC Table for the method
         study.print_table()
-        # Adding the error line to the plotter
-        print(f"Adding the line for the plotter for {method}")
-        plotter.plot_from_study(study)
-    
+        print(f"Adding the study to the collection")
+        studies.append(study)
+
+    figures = plotter.plot_from_studies(studies,reference_orders=[1,2,3])
     print(f"--- Adding reference lines to the plotter ---")
-    h_vals = [1.0 / n for n in refs]
-    for err_type in plotter.active_norms:
-        for order in [1,2,3]:
-            plotter.add_reference_slope(err_type,h_vals,order)
-
-    print("--- Saving the figure in the output directory ---")
-    save_path = f"{OUTPUT_DIR}/convergence.png"
-    plotter.fig.savefig(save_path,dpi=300)
-
-
+    for error_type in figures:
+        fig = figures[error_type]
+        print(f"--- Saving figure for {error_type} in the output directory ---")
+        save_path = f"{OUTPUT_DIR}/convergence - {error_type}.png"
+        fig.savefig(save_path,dpi=300)
 if __name__ == "__main__":
     test_convergence()

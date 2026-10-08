@@ -33,6 +33,7 @@ class ErrorType(str, Enum):
                 "Hdiv(T)",
             ),
         }
+
         return labels[self]
 
 

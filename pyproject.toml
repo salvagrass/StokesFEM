@@ -12,4 +12,4 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 include = ["problems*", "solvers*", "postprocessing*","common*"]
-exclude = ["results*", "benchmarks*"]
+exclude = ["results*", "benchmarks*","notebooks*"]

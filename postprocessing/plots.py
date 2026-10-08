@@ -13,7 +13,23 @@ def plot_velocity(solution: StokesSolution,
                   title: str = 'Velocity Plot',
                   cmap: str = 'viridis',
                   wireframe: bool = False
-                 ):
+                 ) -> Axes:
+    """Plots the velocity field of a Stokes solution.
+
+    Args:
+        solution (StokesSolution): The data object containing the solved velocity 
+            function
+        ax (Optional[Axes], optional): Matplotlib axes where the plot will be drawn. 
+            If None, a new figure and axes are created. Defaults to None.
+        title (str, optional): The title of the plot. Defaults to 'Velocity Plot'.
+        cmap (str, optional): The colormap used for the velocity magnitude. 
+            Defaults to 'viridis'.
+        wireframe (bool, optional): If True, overlays the underlying finite element 
+            mesh grid on top of the plot. Defaults to False.
+
+    Returns:
+        Axes: The matplotlib axes containing the generated plot.
+    """
     if ax is None:
         _,ax = plt.subplots(figsize=(6,5))
     plt.sca(ax)
@@ -28,7 +44,29 @@ def plot_velocity(solution: StokesSolution,
     plt.colorbar(c,cax=cax)
     return ax
 
-def plot_pressure(solution: StokesSolution,ax: Axes = None,title:str = 'Pressure Plot',cmap: str = 'coolwarm',wireframe: bool = False):
+def plot_pressure(
+        solution: StokesSolution,
+        ax: Axes = None,
+        title:str = 'Pressure Plot',
+        cmap: str = 'coolwarm',
+        wireframe: bool = False
+        ) -> Axes:
+    """Plots the pressure field of a Stokes solution.
+
+    Args:
+        solution (StokesSolution): The data object containing the solved pressure 
+            function
+        ax (Optional[Axes], optional): Matplotlib axes where the plot will be drawn. 
+            If None, a new figure and axes are created. Defaults to None.
+        title (str, optional): The title of the plot. Defaults to 'Pressure Plot'.
+        cmap (str, optional): The colormap used for the scalar pressure values. 
+            Defaults to 'coolwarm'.
+        wireframe (bool, optional): If True, overlays the underlying finite element 
+            mesh grid on top of the plot. Defaults to False.
+
+    Returns:
+        Axes: The matplotlib axes containing the generated plot.
+    """
     if ax is None:
         _,ax = plt.subplots(figsize=(6,5))
     plt.sca(ax)
@@ -50,6 +88,28 @@ def plot_combined(solution: StokesSolution,
                   cmaps: Tuple[str,str] = ('viridis','coolwarm'),
                   wireframe: bool = False
                   ):
+    """Creates a multi-panel figure displaying both velocity and pressure fields.
+
+    Args:
+        solution (StokesSolution): The data object containing both velocity 
+            and pressure solved functions.
+        mode (Literal['quiver', 'streamlines'], optional): The visualization mode 
+            for the velocity field. 'quiver' plots vectors, 'streamlines' plots 
+            flow trajectories. Defaults to 'quiver'.
+        title_prefix (str, optional): A string prefix added to the default subplot 
+            titles (e.g., method name). Defaults to ''.
+        layout (Literal['horizontal', 'vertical'], optional): Subplot arrangement. 
+            'horizontal' places plots side-by-side; 'vertical' stacks them. 
+            Defaults to 'horizontal'.
+        cmaps (Tuple[str, str], optional): A tuple of two colormap strings for 
+            velocity and pressure, respectively. Defaults to ('viridis', 'coolwarm').
+        wireframe (bool, optional): If True, overlays the mesh on both plots. 
+            Defaults to False.
+
+    Returns:
+        Tuple[Figure, Union[Axes, np.ndarray]]: A tuple containing the main 
+        matplotlib Figure object and the array of generated Axes.
+    """
     nrows, ncols = (1, 2) if layout == "horizontal" else (2, 1)
     figsize = (12, 5) if layout == "horizontal" else (6, 5)
     
@@ -73,7 +133,24 @@ def plot_streamlines(
         resolution: int = 100,
         density: float = 1.2
         ) -> Axes:
-    
+    """Plots the flow streamlines of the velocity field.
+
+    Args:
+        solution (StokesSolution): The data object containing the solved velocity.
+        ax (Optional[Axes], optional): Matplotlib axes where the plot will be drawn. 
+            If None, a new figure and axes are created. Defaults to None.
+        title (str, optional): The title of the plot. Defaults to "Streamlines Plot".
+        cmap (str, optional): Colormap mapped to the velocity magnitude along 
+            the streamlines. Defaults to "viridis".
+        resolution (int, optional): The number of points along each axis for the 
+            interpolation grid. Higher values yield smoother streamlines but take 
+            longer to compute. Defaults to 100.
+        density (float, optional): Controls the closeness of streamlines. 
+            Defaults to 1.2.
+
+    Returns:
+        Axes: The matplotlib axes containing the generated streamlines.
+    """
     if ax is None:
         _, ax = plt.subplots(figsize=(6, 5))
     plt.sca(ax)

@@ -14,7 +14,7 @@ def test_obstacle():
     problem_data = generate_problem(n=32)
 
     # Getting the list of available methods
-    methods = list(MethodType)
+    methods = [MethodType.KS,MethodType.RTCG,MethodType.AUG]
 
 
     # Setting up the factory and the directory

@@ -14,16 +14,15 @@ def test_cavity():
 
     # Generating the problem
     data = generate_problem(n=20)
-    factory = SolverFactory()
 
     # Setting up the output directory
     os.makedirs(OUTPUT_PATH,exist_ok=True)
 
 
-    for method in [MethodType.HYBRID, MethodType.AFW,MethodType.RTCG]:
+    for method in [MethodType.AUG]:
         print(f"--- Computing the solution for {method} ---")
         print("Creating the factory")
-        solver = factory.create_solver(method=method,fluid_model=None,degree = 3)
+        solver = SolverFactory.create_solver(method=method,fluid_model=None,degree = 1)
 
         print("Solving the problem")
         solution = solver.solve(data=data,mu=Constant(1.0))

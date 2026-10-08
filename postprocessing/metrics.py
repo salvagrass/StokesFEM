@@ -71,38 +71,58 @@ class ConvergenceStudy:
         self.add_error_data(vals, mesh_h)
         return vals
 
-    def _repr_html_(self) -> str:
-        """Render the convergence study as a dynamic HTML table in Jupyter Notebooks."""
-        title = f"Convergence Study: {self.method.value.upper()}"
+    
 
-        html = [
-            f"<div style='font-family: sans-serif; margin-bottom: 10px;'><strong>{title}</strong></div>",
-            "<table style='border-collapse: collapse; text-align: center;'>",
-            "<thead><tr style='border-bottom: 2px solid black;'><th style='padding: 8px;'>$h$</th>"
-        ]
+    def _repr_markdown_(self) -> str:
+        """Render the convergence study as a dynamic Markdown table in Jupyter Notebooks."""
 
-        # Dynamically append LaTeX headers based on active norms
+        # Helper function to convert Python scientific notation (1.2e-03) 
+        # to LaTeX scientific notation (1.2 \times 10^{-3})
+        def to_latex_sci(val: float, precision: int) -> str:
+            if val == 0.0:
+                return "$0$"
+                
+            # Format with standard 'e' and split mantissa and exponent
+            m, e = f"{val:.{precision}e}".split("e")
+            
+            # Convert exponent to int to remove '+' and leading zeros (e.g., '-03' -> '-3')
+            exp = int(e)
+            
+            # Use triple braces {{{ }}} to render literal curly braces in the f-string
+            return f"${m} \\times 10^{{{exp}}}$"
+
+        title = f"**Convergence Study: {self.method.value.upper()}**\n\n"
+
+        # 1. Build the Markdown table headers and alignment row
+        header = "| $h$ |"
+        separator = "|:---:|"  # Colons indicate centered alignment
+
         for norm in self.norms:
             tex_label = norm.label[0]
-            html.append(f"<th style='padding: 8px;'>${tex_label}$</th><th style='padding: 8px;'>EOC</th>")
+            header += f" ${tex_label}$ | EOC |"
+            separator += ":---:|:---:|"
             
-        html.append("</tr></thead><tbody>")
+        markdown_lines = [title, header, separator]
 
-        # Iterate over all recorded refinement levels
+        # 2. Build the data rows
         for i, h in enumerate(self.refs):
-            html.append(f"<tr style='border-bottom: 1px solid #ddd;'><td style='padding: 8px;'>{h:.4e}</td>")
+            # Format 'h' with 2 decimals in LaTeX
+            h_str = to_latex_sci(h, 2)
+            row = f"| {h_str} |"
             
             for norm in self.norms:
                 err = self.errors[norm][i]
                 eoc = self.eocs[norm][i]
+                
+                # Format 'error' with 2 decimals in LaTeX
+                err_str = to_latex_sci(err, 2)
                 eoc_str = f"{eoc:.2f}" if eoc is not None else "-"
                 
-                html.append(f"<td style='padding: 8px;'>{err:.2e}</td><td style='padding: 8px;'>{eoc_str}</td>")
+                row += f" {err_str} | {eoc_str} |"
                 
-            html.append("</tr>")
-
-        html.append("</tbody></table>")
-        return "".join(html)
+            markdown_lines.append(row)
+        # 3. Join everything with newlines
+        return "\n".join(markdown_lines)
 
     def print_table(self) -> None:
         """Print the dynamic convergence study table to standard output."""

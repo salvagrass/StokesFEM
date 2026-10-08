@@ -6,11 +6,10 @@ from fenics import *
 from ufl.coefficient import Coefficient
 
 
-class AugumentedSolver(StokesSolver):
+class AugmentedSolver(StokesSolver):
 
     def __init__(self, fluid_model, degree: int = 2):
-        #! For degree = 1 the projection of the pressure doesn't converge since degree - 1 = 0
-        if degree < 2:
+        if degree < 1:
             raise ValueError("Degree too low for the method")
         super().__init__(fluid_model)
         self.degree = degree 
@@ -23,8 +22,9 @@ class AugumentedSolver(StokesSolver):
         S1 = FiniteElement("BDM",cell,degree=self.degree)
         S2 = FiniteElement("BDM",cell,degree=self.degree)
 
-        N1 = VectorElement("DG",cell,degree=self.degree-1)
-        N2 = VectorElement("DG",cell,degree=self.degree-1)
+        #! Doesn't work with DG elements with degree - 1
+        N1 = FiniteElement("BDM",cell,degree=self.degree)
+        N2 = FiniteElement("BDM",cell,degree=self.degree)
 
         U = VectorElement("DG",cell, self.degree-1)
 
@@ -79,8 +79,7 @@ class AugumentedSolver(StokesSolver):
         T_sol = as_tensor([t1_sol,t2_sol])
 
         p_expr = -0.5*tr(T_sol)
-        #! It only converges for "CG", degree - 1... 
-        p_space = FunctionSpace(data.mesh,"CG",self.degree-1)
+        p_space = FunctionSpace(data.mesh,"DG",self.degree-1)
         p_sol = project(p_expr,p_space)
 
         return StokesSolution(u_sol,p_sol,T_sol,sol,MethodType.AUG)
