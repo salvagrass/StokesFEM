@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from common import MethodType, ErrorType
+from commons import ErrorType
 from postprocessing.metrics import ConvergenceStudy
 
 

@@ -1,5 +1,5 @@
 from problems import StokesProblemData
-from common import MethodType
+from commons import MethodType,FluidModel
 from dataclasses import dataclass
 from ufl.coefficient import Coefficient
 from ufl.core.expr import Expr
@@ -20,24 +20,22 @@ class StokesSolver(ABC):
             (e.g., Newtonian constant viscosity, Power-Law, Carreau).
     """
 
-    def __init__(self, fluid_model: Any):
+    def __init__(self, fluid_model: FluidModel):
         """Initialize the Stokes solver with an optional constitutive fluid model.
 
         Args:
-            fluid_model (Optional[Any], optional): Rheological model describing
-                viscous behavior. Defaults to None.
+            fluid_model: FluidModel: Rheological model describing
+                viscous behavior.
         """
         self.fluid_model = fluid_model
 
     @abstractmethod
-    def solve(self, data: StokesProblemData,mu: Coefficient) -> "StokesSolution":
+    def solve(self, data: StokesProblemData) -> "StokesSolution":
         """Solve the Stokes boundary value problem on the given computational domain.
 
         Args:
             data (StokesProblemData): Container with mesh, boundary markers,
                 boundary data mappings, and volumetric body forces.
-            mu (Coefficient): Dynamic viscosity coefficient (Constant, Function,
-                or Expression).
 
         Returns:
             StokesSolution: Standardized output container holding extracted

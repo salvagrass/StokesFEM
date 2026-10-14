@@ -1,7 +1,7 @@
 from problems.obstacle import generate_problem
 from solvers import SolverFactory,MethodType
 from postprocessing import plots
-
+from commons import PowerLawModel
 
 from fenics import Constant
 
@@ -12,9 +12,11 @@ OUTPUT_DIR = "results/obstacle"
 def test_obstacle():
     # Generating the problem 
     problem_data = generate_problem(n=32)
+    model = PowerLawModel()
+
 
     # Getting the list of available methods
-    methods = [MethodType.KS,MethodType.RTCG,MethodType.AUG]
+    methods = [MethodType.TH,MethodType.MINI,MethodType.KS]
 
 
     # Setting up the factory and the directory
@@ -23,17 +25,17 @@ def test_obstacle():
 
     # Iterating on all of the methods
     for method in methods:
-        solver = factory.create_solver(method=method,fluid_model=None)
+        solver = factory.create_solver(method=method,fluid_model=model)
 
         print(f"--- Solving with {method}---")
-        solution = solver.solve(data=problem_data,mu=Constant(1.0))
+        solution = solver.solve(data=problem_data)
 
         assert solution.u is not None, f"Velocity field not computed - {method}!"
         assert solution.p is not None, f"Pressure field not computed - {method}!"
 
         fig, axes = plots.plot_combined(
             solution=solution,
-            mode='quiver',
+            mode='streamlines',
             title_prefix= f"{method} - ",
             layout='vertical'
             )

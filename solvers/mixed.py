@@ -6,7 +6,7 @@ from ufl.coefficient import Coefficient
 from ufl.core.expr import Expr
 
 from problems import StokesProblemData
-from common import MethodType
+from commons import MethodType
 from solvers.base import StokesSolution, StokesSolver
 
 
@@ -53,8 +53,8 @@ class MixedSolver(StokesSolver):
         X = self._construct_spaces(data.mesh)
 
         # Trial and test functions for [stress_row_1, stress_row_2, velocity, asymmetry_multiplier]
-        s1, s2, u, q = TrialFunctions(X)
-        t1, t2, v, r = TestFunctions(X)
+        t1, t2, u, w= TrialFunctions(X)
+        s1, s2, v, e = TestFunctions(X)
 
         # Impose essential boundary conditions (Neumann tractions become Dirichlet on H(div) stress)
         bcs = []
@@ -66,19 +66,19 @@ class MixedSolver(StokesSolver):
                 DirichletBC(X.sub(1), bc_value[1], data.boundary_markers, bnd_id)
             )
 
+        T = as_tensor([t1, t2])
         sigma = as_tensor([s1, s2])
-        tau = as_tensor([t1, t2])
 
-        # Skew-symmetric Levi-Civita alternator tensor in 2D for weak symmetry enforcement
-        eps = as_tensor([[0, 1], [-1, 0]])
+        W = as_tensor([[0,w],[-w,0]])
+        eta = as_tensor([[0,e],[-e,0]])
 
         # Bilinear form of the dual mixed system with deviatoric compliance and symmetry penalty
         lhs = (
-            dot(div(sigma), v) * dx
-            + inner(dev(sigma), dev(tau)) / (2 * mu) * dx
-            + dot(div(tau), u) * dx
-            + inner(sigma, eps) * r * dx
-            + inner(tau, eps) * q * dx
+            dot(div(T), v) * dx
+            + inner(dev(T), dev(sigma)) / (2 * mu) * dx
+            + dot(u,div(sigma)) * dx
+            + inner(T,eta)* dx
+            + inner(W,sigma)* dx
         )
 
         # Linear functional: volumetric body force
@@ -92,7 +92,7 @@ class MixedSolver(StokesSolver):
 
         # Natural boundary conditions (prescribed Dirichlet velocities enter through boundary integrals)
         for bnd_id, bc_value in data.dirichlet_bcs.items():
-            rhs += dot(dot(tau, n), bc_value) * ds(bnd_id)
+            rhs += dot(dot(sigma, n), bc_value) * ds(bnd_id)
 
         # Solve linear saddle-point algebraic system
         sol = Function(X)

@@ -1,8 +1,25 @@
 from problems.base import StokesProblemData
-from fenics import Expression,UnitSquareMesh,CompiledSubDomain,MeshFunction
+from commons import FluidModel,LinearModel
+from fenics import (Mesh,
+                    UnitSquareMesh,
+                    Expression,
+                    CompiledSubDomain,
+                    MeshFunction,
+                    Identity,
+                    VectorFunctionSpace,
+                    SpatialCoordinate,
+                    sin,
+                    cos,
+                    as_vector,
+                    sym,
+                    grad,
+                    div,
+                    project,
+                    pi
+                    )
 
 
-def generate_problem(n: int = 20) -> StokesProblemData:
+def generate_problem(n: int = 20, model: FluidModel = LinearModel(1.0)) -> StokesProblemData:
     """Generate an analytical Method of Manufactured Solutions (MMS) Stokes problem.
 
     The computational domain is the unit square [0, 1] x [0, 1]. A smooth
@@ -35,42 +52,15 @@ def generate_problem(n: int = 20) -> StokesProblemData:
     CompiledSubDomain("on_boundary and near(x[0],1)").mark(boundary_markers,2)
     CompiledSubDomain("on_boundary and (near(x[0],0) or near(x[1],0))").mark(boundary_markers,3)
 
-    # Load analytical solution fields, body force, and standard surface tractions
-    u_exact, p_exact,T_exact, forcing_term, gNt,gNr = _compute_data()
-
-    dirichlet_bcs = {
-        3: u_exact
-    }
-
-    neumann_bcs = {
-        1: gNt,
-        2: gNr
-    }
-
-    # Decomposed traction components for mixed/dual Stokes formulations (e.g. stress-velocity)
-    g1_top = Expression((
-        "0.0", 
-        "-pi * (cos(pi*x[0]) + 1.0)"
-    ), degree=2)
-    g2_top = Expression((
-        "0.0", 
-        "0.25 * (cos(2*pi*x[0]) + cos(2*pi*x[1]))"
-    ), degree=2)
-
-    g1_right = Expression((
-        "0.25 * (cos(2*pi*x[0]) + cos(2*pi*x[1]))", 
-        "0.0"
-    ), degree=2)
-    g2_right = Expression((
-        "pi * (cos(pi*x[1]) + 1.0)", 
-        "0.0"
-    ), degree=2)
-
-    mixed_neumann_bcs = {
-        1: [g1_top, g2_top],
-        2: [g1_right, g2_right]
-    }
-
+    # Load analytical solution fields, body force, and standard surface tractions and compute boundary conditions
+    (u_exact, 
+     p_exact,
+     T_exact, 
+     forcing_term,
+     dirichlet_bcs,
+     neumann_bcs,
+     mixed_neumann_bcs ) = _compute_data(mesh, model)
+   
     return StokesProblemData(
         mesh,
         boundary_markers,
@@ -83,7 +73,7 @@ def generate_problem(n: int = 20) -> StokesProblemData:
         T_exact
     )
     
-def _compute_data():
+def _compute_data(mesh: Mesh, model: FluidModel):
     u_exact = Expression((
             '(1.0-cos(pi*x[0])) * sin(pi*x[1])',
             'sin(pi*x[0]) * (cos(pi*x[1])-1.0)'
@@ -91,24 +81,59 @@ def _compute_data():
     p_exact = Expression(
             '-0.25 * (cos(2*pi*x[0]) + cos(2*pi*x[1]))',
             degree=6)
-    T_exact = Expression((
-    ('2*pi*sin(pi*x[0])*sin(pi*x[1]) + 0.25*(cos(2*pi*x[0]) + cos(2*pi*x[1]))', 
-     'pi*(cos(pi*x[1]) - cos(pi*x[0]))'),
-    ('pi*(cos(pi*x[1]) - cos(pi*x[0]))', 
-     '-2*pi*sin(pi*x[0])*sin(pi*x[1]) + 0.25*(cos(2*pi*x[0]) + cos(2*pi*x[1]))')
-), degree=6)
-    f = Expression((
-            '-2*pi*pi*cos(pi*x[0])*sin(pi*x[1]) + 0.5*pi*sin(2*pi*x[0]) + pi*pi*sin(pi*x[1])',
-            '2*pi*pi*sin(pi*x[0])*cos(pi*x[1]) + 0.5*pi*sin(2*pi*x[1]) - pi*pi*sin(pi*x[0])'
-                   ), degree=2)
+
+    # Setting up automatic computation of the problem
+    x,y = SpatialCoordinate(mesh)
+    u_ufl = as_vector((
+        (1.0 - cos(pi * x)) * sin(pi * y),
+        sin(pi * x) * (cos(pi * y) - 1.0),
+    ))
+    p_ufl = -0.25 * (cos(2 * pi * x) + cos(2 * pi * y)) 
+
+
     
-    gNt = Expression((
-            '-pi * (cos(pi*x[0]) + 1.0)', 
-            '0.25 * (cos(2*pi*x[0]) + cos(2*pi*x[1]))'
-        ), degree=2)
+    dirichlet_bcs = {
+        3: u_exact
+    }
+
+
+    # Automatic differentiation
+    I = Identity(mesh.geometric_dimension())
+    mu_exact = model.mu(u_ufl)
+
+    T_exact = -p_ufl*I + 2*mu_exact*sym(grad(u_ufl))
+    forcing_term = -div(T_exact)
+
+    # Computing the Neumann Boundary conditions automatically
+    gNt = as_vector((T_exact[0,1],T_exact[1,1])) # N = (0,1), so Tn = (T01,T11)
+    gNr = as_vector((T_exact[0,0],T_exact[1,0])) # N = (1,0), so Tn = (T00,T10)
+
+    neumann_bcs = {
+        1: gNt,
+        2: gNr
+    }
+
+
+    # the DirichletBC function only accepts C++ expressions
     
-    gNr = Expression((
-            '0.25 * (cos(2*pi*x[0]) + cos(2*pi*x[1]))', 
-            'pi * (cos(pi*x[1]) + 1.0)'  
-        ), degree=2)
-    return u_exact,p_exact,T_exact,f,gNt,gNr
+    first_row = as_vector((T_exact[0,0],T_exact[0,1]))
+    second_row = as_vector((T_exact[1,0],T_exact[1,1]))
+    
+    proj_space = VectorFunctionSpace(mesh,"CG",4) # We project on a space of degree 4 to have negligible error in the solvers
+    proj_1 = project(first_row,proj_space)
+    proj_2 = project(second_row,proj_space)
+
+    T_boundary = [proj_1, proj_2]
+
+    mixed_neumann_bcs = {
+        1: T_boundary,
+        2: T_boundary
+    }
+    
+    return (u_exact,
+            p_exact,
+            T_exact,
+            forcing_term,
+            dirichlet_bcs,
+            neumann_bcs,
+            mixed_neumann_bcs)

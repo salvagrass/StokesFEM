@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional
 import numpy as np
 
-from common import MethodType, ErrorType
+from commons import MethodType, ErrorType
 from problems import StokesProblemData
 from solvers import StokesSolution
 

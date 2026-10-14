@@ -1,9 +1,9 @@
 from typing import Optional,Any
-from common import MethodType
+from commons import MethodType
 from solvers.base import StokesSolver
 from solvers.mixed import AFWSolver, HybridSolver, RTCGSolver
 from solvers.primal import KSSolver, MINISolver, TaylorHoodSolver
-from solvers.augmented import AugmentedSolver
+from solvers.augmented import AUG_BDM_Solver,AUG_RT_Solver
 
 
 class SolverFactory:
@@ -21,7 +21,8 @@ class SolverFactory:
             fluid, degree=kw.get("degree", 2)
         ),
         MethodType.HYBRID: lambda fluid, **kw: HybridSolver(fluid),
-        MethodType.AUG : lambda fluid,**kw: AugmentedSolver(fluid,degree=kw.get("degree",2))
+        MethodType.AUG_BDM : lambda fluid,**kw: AUG_BDM_Solver(fluid,degree=kw.get("degree",1)),
+        MethodType.AUG_RT: lambda fluid, **kw: AUG_RT_Solver(fluid,degree=kw.get("degree",1))
     }
 
     @classmethod

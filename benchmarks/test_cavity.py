@@ -1,4 +1,5 @@
 from solvers import SolverFactory,MethodType
+from commons import PowerLawModel
 from problems.cavity import generate_problem
 from postprocessing import plots
 
@@ -13,28 +14,28 @@ def test_cavity():
     print("--- Lid Driven Cavity Test ---")
 
     # Generating the problem
-    data = generate_problem(n=20)
+    data = generate_problem(n=10)
+    model = PowerLawModel(0.5,3,0.2)
 
     # Setting up the output directory
     os.makedirs(OUTPUT_PATH,exist_ok=True)
 
 
-    for method in [MethodType.AUG]:
+    for method in [MethodType.TH,MethodType.MINI,MethodType.KS]:
         print(f"--- Computing the solution for {method} ---")
         print("Creating the factory")
-        solver = SolverFactory.create_solver(method=method,fluid_model=None,degree = 1)
+        solver = SolverFactory.create_solver(method,model)
 
         print("Solving the problem")
-        solution = solver.solve(data=data,mu=Constant(1.0))
+        solution = solver.solve(data=data)
         assert solution.u is not None, f"Velocity field not computed - {method}!"
         assert solution.p is not None, f"Pressure field not computed - {method}!"
 
         fig, axes = plots.plot_combined(
             solution=solution,
-            mode='streamlines',
+            mode='quiver',
             title_prefix=f"Cavity {method}",
             layout="horizontal",
-            wireframe=True
         )
 
         print(f"Saving the results")

@@ -1,4 +1,4 @@
-from common import ErrorType,MethodType
+from commons import ErrorType,MethodType
 from problems import StokesProblemData
 from solvers import StokesSolution
 import numpy as np

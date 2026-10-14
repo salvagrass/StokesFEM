@@ -50,7 +50,8 @@ class MethodType(str, Enum):
     AFW = "Arnold-Falk-Winther"
     RTCG = "Raviart-Thomas"
     HYBRID = "Hybrid"
-    AUG = "Augmented"
+    AUG_BDM = "Augmented_BDM"
+    AUG_RT = "Augmented_RT"
 
     def __str__(self) -> str:
         return self.value
@@ -65,12 +66,13 @@ class MethodType(str, Enum):
             MethodType.AFW: ("tab:red", "D"),
             MethodType.RTCG: ("tab:purple", "v"),
             MethodType.HYBRID: ("tab:brown", "p"),
-            MethodType.AUG: ("tab:olive", "X"),
+            MethodType.AUG_RT: ("tab:olive", "X"),
+            MethodType.AUG_BDM: ("tab:cyan", "*"), # Stile distinto per BDM
         }
         return styles[self]
 
     @property
-    def accepted_norms(self) -> List[ErrorType]:
+    def accepted_norms(self) -> List['ErrorType']:
         """Canonical norms expected by mathematical a priori error bounds."""
         primal_norms = [
             ErrorType.U_L2,
@@ -95,6 +97,7 @@ class MethodType(str, Enum):
             MethodType.AFW: mixed_norms,
             MethodType.RTCG: mixed_norms,
             MethodType.HYBRID: mixed_norms,
-            MethodType.AUG: mixed_norms,
+            MethodType.AUG_RT: mixed_norms,
+            MethodType.AUG_BDM: mixed_norms,
         }
         return norms[self]

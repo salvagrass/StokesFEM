@@ -1,35 +1,19 @@
 from problems import StokesProblemData
-from common import MethodType
+from commons import MethodType
 from solvers.base import StokesSolution,StokesSolver
 
 from fenics import *
 from ufl.coefficient import Coefficient
 
+from abc import abstractmethod
 
 class AugmentedSolver(StokesSolver):
 
-    def __init__(self, fluid_model, degree: int = 2):
-        if degree < 1:
-            raise ValueError("Degree too low for the method")
+    def __init__(self, fluid_model):
         super().__init__(fluid_model)
-        self.degree = degree 
 
-    
     def solve(self,data: StokesProblemData, mu: Coefficient) -> StokesSolution:
-
-        #Spaces definition 
-        cell = data.mesh.ufl_cell()
-        S1 = FiniteElement("BDM",cell,degree=self.degree)
-        S2 = FiniteElement("BDM",cell,degree=self.degree)
-
-        #! Doesn't work with DG elements with degree - 1
-        N1 = FiniteElement("BDM",cell,degree=self.degree)
-        N2 = FiniteElement("BDM",cell,degree=self.degree)
-
-        U = VectorElement("DG",cell, self.degree-1)
-
-        # Constructing global space
-        W = FunctionSpace(data.mesh,MixedElement([S1,S2,N1,N2,U]))
+        W = self._construct_spaces(data.mesh)
 
         # Setting up our elements
         t1,t2,r1,r2,u = TrialFunctions(W)
@@ -82,5 +66,54 @@ class AugmentedSolver(StokesSolver):
         p_space = FunctionSpace(data.mesh,"DG",self.degree-1)
         p_sol = project(p_expr,p_space)
 
-        return StokesSolution(u_sol,p_sol,T_sol,sol,MethodType.AUG)
-        
+        return StokesSolution(u_sol,p_sol,T_sol,sol,self.method_name)
+
+
+    @abstractmethod
+    def _construct_spaces(self,mesh: Mesh):
+        pass
+
+
+class AUG_BDM_Solver(AugmentedSolver):
+    method_name = MethodType.AUG_BDM
+    def __init__(self, fluid_model, degree: int = 1):
+        if(degree < 1):
+            raise ValueError("Degree too low for the method")
+        super().__init__(fluid_model)
+        self.degree = degree
+
+    def _construct_spaces(self,mesh):
+        cell = mesh.ufl_cell()
+        S1 = FiniteElement("BDM",cell,degree=self.degree)
+        S2 = FiniteElement("BDM",cell,degree=self.degree)
+                
+        #! Doesn't work with DG elements with degree - 1
+        N1 = FiniteElement("BDM",cell,degree=self.degree)
+        N2 = FiniteElement("BDM",cell,degree=self.degree)
+                
+        U = VectorElement("DG",cell, self.degree-1)
+
+        # Constructing global space
+        return FunctionSpace(mesh,MixedElement([S1,S2,N1,N2,U]))
+
+class AUG_RT_Solver(AugmentedSolver):
+    method_name = MethodType.AUG_RT
+    def __init__(self, fluid_model, degree: int = 1):
+        if(degree < 1):
+            raise ValueError("Degree too low for the method")
+        super().__init__(fluid_model)
+        self.degree = degree
+
+    def _construct_spaces(self,mesh):
+        cell = mesh.ufl_cell()
+        S1 = FiniteElement("RT",cell,degree=self.degree)
+        S2 = FiniteElement("RT",cell,degree=self.degree)
+                
+        #! Doesn't work with DG elements with degree - 1
+        N1 = FiniteElement("RT",cell,degree=self.degree)
+        N2 = FiniteElement("RT",cell,degree=self.degree)
+                
+        U = VectorElement("DG",cell, self.degree-1)
+
+        # Constructing global space
+        return FunctionSpace(mesh,MixedElement([S1,S2,N1,N2,U]))
