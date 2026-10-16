@@ -1,5 +1,5 @@
-from typing import Optional,Any
-from commons import MethodType
+from typing import Any
+from commons import MethodType,FluidModel
 from solvers.base import StokesSolver
 from solvers.mixed import AFWSolver, HybridSolver, RTCGSolver
 from solvers.primal import KSSolver, MINISolver, TaylorHoodSolver
@@ -29,14 +29,14 @@ class SolverFactory:
     def create_solver(
         cls,
         method: MethodType,
-        fluid_model: Optional[Any] = None,
+        fluid_model: FluidModel,
         **kwargs: Any,
     ) -> StokesSolver:
         """Instantiate and configure a StokesSolver subclass.
 
         Args:
             method (MethodType): Desired discretization scheme from MethodType.
-            fluid_model (Optional[Any], optional): Rheological model for non-Newtonian
+            fluid_model (FluidModel): Rheological model for non-Newtonian
                 or variable-viscosity fluids. Defaults to None.
             **kwargs: Additional formulation parameters passed to the solver constructor
                 (e.g., polynomial degree).

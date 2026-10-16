@@ -1,10 +1,12 @@
 from problems import StokesProblemData
 from commons import MethodType,FluidModel
+from solvers.strategies import SolverStrategy
 from dataclasses import dataclass
+from fenics import Function
 from ufl.coefficient import Coefficient
 from ufl.core.expr import Expr
 from abc import ABC,abstractmethod
-from typing import Any
+from typing import Callable,Tuple
 
 
 class StokesSolver(ABC):
@@ -30,12 +32,13 @@ class StokesSolver(ABC):
         self.fluid_model = fluid_model
 
     @abstractmethod
-    def solve(self, data: StokesProblemData) -> "StokesSolution":
+    def solve(self, data: StokesProblemData,strategy: SolverStrategy) -> "StokesSolution":
         """Solve the Stokes boundary value problem on the given computational domain.
 
         Args:
             data (StokesProblemData): Container with mesh, boundary markers,
                 boundary data mappings, and volumetric body forces.
+            strategy (SolverStrategy): 
 
         Returns:
             StokesSolution: Standardized output container holding extracted
@@ -43,6 +46,10 @@ class StokesSolver(ABC):
         """
         pass
 
+    @abstractmethod
+    def build_system(self, x: Function,mu_func: Callable[[Expr],Expr] , linear: bool = False) -> Tuple[Expr,Expr]:
+        pass
+    
 @dataclass
 class StokesSolution:
     """Standardized solution container holding discrete fields from a Stokes solver.

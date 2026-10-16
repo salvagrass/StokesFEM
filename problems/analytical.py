@@ -99,7 +99,7 @@ def _compute_data(mesh: Mesh, model: FluidModel):
 
     # Automatic differentiation
     I = Identity(mesh.geometric_dimension())
-    mu_exact = model.mu(u_ufl)
+    mu_exact = model.mu(sym(grad(u_ufl)))
 
     T_exact = -p_ufl*I + 2*mu_exact*sym(grad(u_ufl))
     forcing_term = -div(T_exact)

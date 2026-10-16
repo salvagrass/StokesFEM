@@ -1,6 +1,7 @@
-from commons import MethodType,PowerLawModel
+from commons import MethodType,CarreauModel,PowerLawModel,LinearModel
 from problems.analytical import generate_problem
 from solvers import SolverFactory
+from solvers.strategies import *
 from postprocessing import ConvergenceStudy,ConvergencePlotter,compute_errors
 
 
@@ -10,8 +11,8 @@ OUTPUT_DIR = "results/analytical"
 def test_convergence():
 
     # Constructing linear model
-    model = PowerLawModel()
-
+    model = PowerLawModel(K=0.5,r=2.5)
+    strategy = HybridStrategy()
     # Setting up the increments
     refs = [2,4,8,16,32]
 
@@ -19,10 +20,10 @@ def test_convergence():
     os.makedirs(OUTPUT_DIR,exist_ok=True)
 
     # Preparing the list of methods
-    methods = [MethodType.TH,MethodType.MINI,MethodType.KS]
+    methods = [MethodType.TH,MethodType.AUG_BDM,MethodType.AFW]
 
     # Preparing the plotter
-    plotter = ConvergencePlotter('h',"MMS",normalized=True)
+    plotter = ConvergencePlotter('h',prefix="MMS - Power Law K=0.5, r=2.5",normalized=True)
     studies = []
     for method in methods:
         print(f"--- Setting up the problem for {method} ---")
@@ -35,7 +36,7 @@ def test_convergence():
 
             # Solving the problem and computing errors
             print(f"Attempting to solve the problem and compute errors")
-            solution = solver.solve(data)  
+            solution = solver.solve(data,strategy)  
             assert solution.u is not None, f"Velocity field not computed - {method}!"
             assert solution.p is not None, f"Pressure field not computed - {method}!"
             errors = compute_errors(data,solution,method)
