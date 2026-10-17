@@ -184,4 +184,4 @@ class AugmentedState(State):
         _,_,r1,r2,_ = split(self.x)
         R = as_tensor([r1,r2])
 
-        return self.mu_func(R)
+        return self.mu_func(sym(R))
