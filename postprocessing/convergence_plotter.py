@@ -166,6 +166,13 @@ class ConvergencePlotter:
             ax.set_ylabel(rf"Error (${norm.label[0]}$)", fontsize=12)
             xlabel = "h refinements" if self.mode=="h" else "p"
             ax.set_xlabel(xlabel=xlabel)
+
+            ax.set_xticks(study.refs)
+            if self.mode == "h":
+                ax.set_xticklabels([f"{val:.4g}" for val in study.refs])
+            else:
+                ax.set_xticklabels([f"{int(val)}" for val in study.refs])
+            # -----------------------------
             if not show:
                 plt.close(fig)
         return figures
