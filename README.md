@@ -22,25 +22,30 @@ Instead of writing monolithic, single-use simulation scripts, the framework deco
 
 The generalized steady incompressible Stokes problem models creeping flow for viscous fluids:
 
-$$\begin{aligned} -\nabla \cdot (2\mu(\boldsymbol{D})\boldsymbol{D}) + \nabla p &= \boldsymbol{f} \quad \text{in } \Omega, \\ \nabla \cdot \boldsymbol{u} &= 0 \quad \text{in } \Omega, \end{aligned}$$
+$$
+\begin{aligned}
+-\nabla \cdot (2\mu(\mathbf{D})\mathbf{D}) + \nabla p &= \mathbf{f} \quad \text{in } \Omega, \\
+\nabla \cdot \mathbf{u} &= 0 \quad \text{in } \Omega,
+\end{aligned}
+$$
 
-where $\boldsymbol{u}$ is the velocity, $p$ is the pressure, $\boldsymbol{D}(\boldsymbol{u}) = \operatorname{sym}(\nabla \boldsymbol{u})$ is the symmetric strain-rate tensor, and $\boldsymbol{\sigma} = 2\mu(\boldsymbol{D})\boldsymbol{D}(\boldsymbol{u}) - p\boldsymbol{I}$ is the Cauchy stress tensor.
+where $\mathbf{u}$ is the velocity, $p$ is the pressure, $\mathbf{D}(\mathbf{u}) = \mathrm{sym}(\nabla \mathbf{u})$ is the symmetric strain-rate tensor, and $\boldsymbol{\sigma} = 2\mu(\mathbf{D})\mathbf{D}(\mathbf{u}) - p\mathbf{I}$ is the Cauchy stress tensor.
 
 Because discrete velocity, pressure, and stress spaces must satisfy Ladyzhenskaya–Babuška–Brezzi (inf-sup) stability, multiple discrete approaches are implemented:
 
-- **Primal Formulations ($\boldsymbol{u}, p$):**
-  * Taylor–Hood ($\mathbb{P}_k / \mathbb{P}_{k-1}$)
+- **Primal Formulations ($\mathbf{u}, p$):**
+  * Taylor–Hood ($\mathbb P_{k+1}/ \mathbb P_{k}$)
   * MINI element ($\mathbb{P}_1 + \text{bubble} / \mathbb{P}_1$)
   * Kouhia–Stenberg (KS)
 
-- **Mixed Dual Formulations ($\boldsymbol{\sigma}, \boldsymbol{u}$):**
+- **Mixed Dual Formulations ($\boldsymbol{\sigma}, \mathbf{u}$):**
   * Arnold–Falk–Winther (AFW)
   * Raviart–Thomas / Continuous Galerkin (RT-CG)
   * Hybridized Mixed Methods
-
-- **Augmented Formulations ($\boldsymbol{T}, \boldsymbol{R}, \boldsymbol{u}$):**
-  * Augmented BDM ($\text{BDM}_k \times \text{BDM}_k \times \text{DG}_{k-1}$)
-  * Augmented RT ($\text{RT}_k \times \text{RT}_k \times \text{DG}_{k-1}$)
+   
+- **Augmented Formulations ($\mathbf{T}, \mathbf{R}, \mathbf{u}$):**
+  * Augmented BDM ($`\mathrm{BDM}_k \times \mathrm{BDM}_k \times \mathrm{DG}_{k-1}`$)
+  * Augmented RT ($`\mathrm{RT}_k \times \mathrm{RT}_k \times \mathrm{DG}_{k-1}`$)
 
 ---
 
