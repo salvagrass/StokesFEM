@@ -36,8 +36,7 @@ class SolverFactory:
 
         Args:
             method (MethodType): Desired discretization scheme from MethodType.
-            fluid_model (FluidModel): Rheological model for non-Newtonian
-                or variable-viscosity fluids. Defaults to None.
+            fluid_model (FluidModel): Rheological model for fluids
             **kwargs: Additional formulation parameters passed to the solver constructor
                 (e.g., polynomial degree).
 

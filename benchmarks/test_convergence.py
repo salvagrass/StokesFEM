@@ -1,4 +1,4 @@
-from commons import MethodType,CarreauModel,PowerLawModel,LinearModel
+from commons import MethodType,CarreauModel,PowerLawModel,LinearModel,ErrorType
 from problems.analytical import generate_problem
 from solvers import SolverFactory
 from solvers.strategies import *
@@ -6,7 +6,7 @@ from postprocessing import ConvergenceStudy,ConvergencePlotter,compute_errors
 
 
 import os
-OUTPUT_DIR = "results/analytical"
+OUTPUT_DIR = "assets/"
 
 def test_convergence():
 
@@ -14,7 +14,7 @@ def test_convergence():
     model = PowerLawModel(K=0.5,r=2.5)
     strategy = HybridStrategy()
     # Setting up the increments
-    refs = [2,4,8,16,32]
+    refs = [2,4,8,16,32,64]
 
     # Preparing the output directory
     os.makedirs(OUTPUT_DIR,exist_ok=True)
@@ -48,10 +48,10 @@ def test_convergence():
 
     figures = plotter.plot_from_studies(studies,reference_orders=[1,2,3])
     print(f"--- Adding reference lines to the plotter ---")
-    for error_type in figures:
+    for error_type in [ErrorType.U_L2,ErrorType.T_L2]:
         fig = figures[error_type]
         print(f"--- Saving figure for {error_type} in the output directory ---")
         save_path = f"{OUTPUT_DIR}/convergence - {error_type}.png"
-        fig.savefig(save_path,dpi=300)
+        fig.savefig(save_path,dpi=300,bbox_inches="tight",pad_inches=0.1)
 if __name__ == "__main__":
     test_convergence()

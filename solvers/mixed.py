@@ -22,8 +22,7 @@ class MixedSolver(StokesSolver):
         """Initialize the mixed stress-velocity solver.
 
         Args:
-            fluid_model (Optional[Any], optional): Rheological model for non-Newtonian
-                or variable-viscosity fluids. Defaults to None.
+            fluid_model (FluidModel): Rheological model for fluids
         """
         super().__init__(fluid_model)
 
@@ -45,6 +44,8 @@ class MixedSolver(StokesSolver):
         Args:
             data (StokesProblemData): Problem specifications including geometry,
                 boundary facets, boundary tractions/velocities, and source term.
+            strategy (SolverStrategy): the strategy used to solve the system
+                (e.g, LinearStrategy,NewtonStrategy,PicardStrategy)
         Returns:
             StokesSolution: Extracted discrete velocity and post-processed pressure
                 fields along with the full mixed solution.

@@ -11,8 +11,7 @@ from postprocessing.metrics import ConvergenceStudy
 class ConvergencePlotter:
     """Visualizes finite element convergence rates across multiple error norms.
 
-    Generates a dynamic multi-panel figure based on the norms active across 
-    the provided discretization schemes. Supports both h-refinement (log-log scale) 
+    Stores figures based on the norms active across the provided discretization schemes. Supports both h-refinement (log-log scale) 
     and p-refinement (semi-logarithmic scale) studies with optional error normalization 
     and theoretical reference slopes.
     """
@@ -39,7 +38,7 @@ class ConvergencePlotter:
                 'p' for polynomial degree elevation). Defaults to 'h'.
             prefix (str, optional): Text prepended to subplot titles. Defaults to None.
             normalized (bool, optional): If True, scales error sequences by their initial
-                value (e_i / e_0). Defaults to False.
+                value. Defaults to False.
         """
         self.mode = mode
         self.prefix = f"{prefix} - " if prefix else ""
@@ -130,6 +129,8 @@ class ConvergencePlotter:
                 or list of completed convergence studies containing error histories.
             figsize (Tuple[float, float], optional): Dimensions (width, height)
                 in inches for each generated figure. Defaults to (10, 6).
+            reference_orders (Tuple[int],optional): Optional references slopes to be drawn with the errors.
+                defaults to None
             show (bool, optional): If True, leaves the figure open for display;
                 if False, closes the figure to avoid GUI window clutter and free memory.
                 Defaults to False.

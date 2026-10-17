@@ -20,20 +20,26 @@ from fenics import (Mesh,
 
 
 def generate_problem(n: int = 20, model: FluidModel = LinearModel(1.0)) -> StokesProblemData:
-    """Generate an analytical Method of Manufactured Solutions (MMS) Stokes problem.
+    """Generates an analytical Method of Manufactured Solutions (MMS) Stokes problem.
 
-    The computational domain is the unit square [0, 1] x [0, 1]. A smooth
+    The computational domain is the unit square Ω = [0, 1] × [0, 1]. A smooth
     manufactured solution with known velocity and pressure fields is imposed:
     Dirichlet boundary conditions are enforced on the bottom and left edges,
     while Neumann tractions are prescribed on the top and right edges.
 
+    Subdomain classification:
+        - Marker 1: Top boundary (y = 1)
+        - Marker 2: Right boundary (x = 1)
+        - Marker 3: Left and bottom boundaries (x = 0 or y = 0)
+
     Args:
-        n (int, optional): Number of mesh subdivisions per spatial direction.
-            Defaults to 20.
+        n: Number of mesh subdivisions per spatial direction. Defaults to 20.
+        model: Fluid rheology constitutive model instance determining the
+            viscosity law. Defaults to LinearModel(1.0).
 
     Returns:
-        StokesProblemData: Configured problem container with domain mesh,
-            boundary facets, boundary condition mappings, forcing field,
+        StokesProblemData: Configured problem container holding the mesh,
+            boundary facet markers, boundary conditions, forcing field,
             and exact analytical solutions.
     """
     mesh = UnitSquareMesh(n,n,'crossed')

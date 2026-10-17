@@ -25,6 +25,8 @@ class StokesProblemData:
             used for error evaluation and convergence verification (MMS). Defaults to None.
         p_exact (Optional[Coefficient]): Analytical or high-fidelity reference pressure field
             used for error evaluation and convergence verification (MMS). Defaults to None.
+        T_exact (Optional[Coefficient]): Analytical or high-fidelity reference stress tensor used
+            for error_evaluation and convergence verification (MMS). Defaults to None
     """
 
     mesh: Mesh

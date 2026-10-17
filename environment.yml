@@ -1,6 +1,7 @@
-name: fenics_legacy
+name: stokes-fem
 channels:
   - conda-forge
+  - nodefaults
 dependencies:
   - python=3.8
   - fenics=2019.1.0

@@ -2,6 +2,11 @@ from .base import SolverStrategy
 from fenics import Constant,solve
 
 class NewtonStrategy(SolverStrategy):
+    """Solves nonlinear variational systems via the Newton-Raphson method.
+
+    Optionally computes an initial guess by first solving a linearized
+    system with a constant viscosity estimate.
+    """
     def __init__(self, 
                  mu_guess: float = 1,
                  quad_points: int = 6, 
@@ -11,6 +16,17 @@ class NewtonStrategy(SolverStrategy):
                  rel_tol: float = 1e-9,
                  not_guess: bool = False
                  ):
+        """Initializes the Newton solver strategy.
+
+        Args:
+            mu_guess: Viscosity value for the optional initial linear guess.
+            quad_points: Quadrature degree for numerical integration.
+            relaxation: Under-relaxation parameter (0 < relaxation <= 1).
+            max_iteration: Maximum number of Newton iterations allowed.
+            abs_tol: Absolute residual convergence tolerance.
+            rel_tol: Relative residual convergence tolerance.
+            not_guess: If True, skips the initial linear solve step.
+        """
         super().__init__()
         # Forcing types for Fenics solver
         self.mu_guess = Constant(mu_guess)
@@ -21,7 +37,14 @@ class NewtonStrategy(SolverStrategy):
         self.rel_tol = float(rel_tol)
         self.not_guess = not_guess
 
-    def solve_system(self, build_system,state,bcs):
+    def solve_system(self, build_system,state,bcs) -> None:
+        """Executes the Newton-Raphson solver on the discrete variational form.
+
+        Args:
+            build_system: Callback returning (lhs, rhs) for a given state.
+            state: Solution state container updated in-place.
+            bcs: Dirichlet boundary conditions enforced on the system.
+        """
 
         if not self.not_guess:
             mu = lambda u: self.mu_guess

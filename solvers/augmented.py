@@ -5,16 +5,35 @@ from solvers.state import State
 from solvers.strategies import SolverStrategy
 
 from fenics import *
+from ufl.core.expr import Expr
 
 from abc import abstractmethod
-
+from typing import Tuple
 
 class AugmentedSolver(StokesSolver):
+    """Base class for augmented mixed Stokes solvers.
+
+    Solves for stress T, auxiliary gradient R, and velocity u.
+    """
 
     def __init__(self, fluid_model):
+        """Initializes the augmented solver.
+
+        Args:
+            fluid_model: Rheology model defining viscosity μ.
+        """
         super().__init__(fluid_model)
 
     def solve(self,data: StokesProblemData, strategy: SolverStrategy) -> StokesSolution:
+        """Solves the augmented Stokes problem.
+
+        Args:
+            data: Problem setup with mesh, markers, and boundary data.
+            strategy: Solver strategy (e.g., Picard, Newton, or linear).
+
+        Returns:
+            StokesSolution containing computed u, p, T.
+        """
         self.data = data
 
         mu = self.fluid_model.mu
@@ -45,7 +64,17 @@ class AugmentedSolver(StokesSolver):
         return StokesSolution(u_sol,p_sol,T_sol,x,self.method_name)
 
 
-    def build_system(self, x:Function,mu,linear: bool = False):
+    def build_system(self, x:Function,mu,linear: bool = False) -> Tuple[Expr,Expr]:
+        """Assembles variational forms (lhs, rhs) for the augmented system.
+
+        Args:
+            x: Current solution state vector.
+            mu: Apparent viscosity function μ(D).
+            linear: If True, uses TrialFunctions instead of split(x).
+
+        Returns:
+            Tuple of UFL forms (lhs, rhs).
+        """
 
         X = x.function_space()
         # Setting up our elements
@@ -87,8 +116,16 @@ class AugmentedSolver(StokesSolver):
 
 
 class AUG_BDM_Solver(AugmentedSolver):
+    """Augmented solver using Brezzi-Douglas-Marini (BDM) elements."""
+
     method_name = MethodType.AUG_BDM
     def __init__(self, fluid_model, degree: int = 1):
+        """Initializes the BDM augmented solver.
+
+        Args:
+            fluid_model: Fluid rheology model.
+            degree: Polynomial degree (must be >= 1).
+        """
         if(degree < 1):
             raise ValueError("Degree too low for the method")
         super().__init__(fluid_model)
@@ -109,8 +146,16 @@ class AUG_BDM_Solver(AugmentedSolver):
         return FunctionSpace(mesh,MixedElement([S1,S2,N1,N2,U]))
 
 class AUG_RT_Solver(AugmentedSolver):
+    """Augmented solver using Raviart-Thomas (RT) elements."""
+    
     method_name = MethodType.AUG_RT
     def __init__(self, fluid_model, degree: int = 1):
+        """Initializes the BDM augmented solver.
+
+        Args:
+            fluid_model: Fluid rheology model.
+            degree: Polynomial degree (must be >= 1).
+        """
         if(degree < 1):
             raise ValueError("Degree too low for the method")
         super().__init__(fluid_model)

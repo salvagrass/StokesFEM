@@ -18,7 +18,7 @@ class StokesSolver(ABC):
     non-Newtonian rheological regimes.
 
     Attributes:
-        fluid_model (Any): Constitutive rheology model governing fluid behavior
+        fluid_model (FluidModel): Constitutive rheology model governing fluid behavior
             (e.g., Newtonian constant viscosity, Power-Law, Carreau).
     """
 
@@ -38,7 +38,8 @@ class StokesSolver(ABC):
         Args:
             data (StokesProblemData): Container with mesh, boundary markers,
                 boundary data mappings, and volumetric body forces.
-            strategy (SolverStrategy): 
+            strategy (SolverStrategy): the strategy used to solve the system
+                (e.g, LinearStrategy,NewtonStrategy,PicardStrategy)
 
         Returns:
             StokesSolution: Standardized output container holding extracted

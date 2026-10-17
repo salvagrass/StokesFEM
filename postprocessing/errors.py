@@ -5,16 +5,59 @@ import numpy as np
 from fenics import errornorm,Measure,assemble,inner,div
 from typing import Dict
 
-def u_l2_error(data: StokesProblemData, solution: StokesSolution, degree_rise: int = 3):
+def u_l2_error(data: StokesProblemData, solution: StokesSolution, degree_rise: int = 3) -> float:
+    """Computes the L2 norm of the velocity error.
+
+    Args:
+        data: Problem definition containing the analytical exact velocity `u_exact`.
+        solution: Numerical solution containing computed velocity `u`.
+        degree_rise: Polynomial degree increase for higher-order quadrature
+            integration during error evaluation. Defaults to 3.
+
+    Returns:
+        Scalar L2 error value.
+    """
     return errornorm(data.u_exact,solution.u,norm_type="L2",degree_rise=degree_rise)
 
-def u_h1_error(data: StokesProblemData, solution: StokesSolution, degree_rise: int = 3):
+def u_h1_error(data: StokesProblemData, solution: StokesSolution, degree_rise: int = 3) -> float:
+    """Computes the H1_0 semi-norm of the velocity error.
+
+    Args:
+        data: Problem definition containing the analytical exact velocity `u_exact`.
+        solution: Numerical solution containing computed velocity `u`.
+        degree_rise: Polynomial degree increase for higher-order quadrature
+            integration. Defaults to 3.
+
+    Returns:
+        Scalar H1_0 error value.
+    """
     return errornorm(data.u_exact,solution.u,norm_type="H10",degree_rise=degree_rise)
 
-def p_l2_error(data: StokesProblemData, solution: StokesSolution, degree_rise: int=3):
+def p_l2_error(data: StokesProblemData, solution: StokesSolution, degree_rise: int=3) -> float:
+    """Computes the L2 norm of the pressure error.
+
+    Args:
+        data: Problem definition containing the analytical exact pressure `p_exact`.
+        solution: Numerical solution containing computed pressure `p`.
+        degree_rise: Polynomial degree increase for higher-order quadrature
+            integration. Defaults to 3.
+
+    Returns:
+        Scalar L2 pressure error value.
+    """
     return errornorm(data.p_exact,solution.p,norm_type="L2",degree_rise=degree_rise)
 
 def T_l2_error(data: StokesProblemData, solution: StokesSolution) -> float:
+    """Computes the L2 norm of the stress tensor error via assembly.
+
+    Args:
+        data: Problem definition containing exact stress `T_exact` and `mesh`.
+        solution: Numerical solution containing computed stress tensor `T`.
+
+    Returns:
+        Scalar L2 stress error value, bounded below at 0.0 to avoid floating point
+        sign errors.
+    """
     error_tensor = data.T_exact - solution.T
     dx_mesh = Measure("dx",domain=data.mesh)
     error = assemble(inner(error_tensor,error_tensor)*dx_mesh)
@@ -23,6 +66,15 @@ def T_l2_error(data: StokesProblemData, solution: StokesSolution) -> float:
     return float(np.sqrt(max(0.0,error)))
 
 def T_hdiv_error(data:StokesProblemData, solution: StokesSolution) -> float:
+    """Computes the H(div) norm of the stress tensor error.
+
+    Args:
+        data: Problem definition containing `forcing_term` f, `T_exact`, and `mesh`.
+        solution: Numerical solution containing computed stress tensor `T`.
+
+    Returns:
+        Scalar H(div) stress error value.
+    """
     error_div = -data.forcing_term - div(solution.T)
 
     dx_mesh = Measure("dx",domain=data.mesh)
@@ -41,7 +93,7 @@ ERROR_DISPATCHER = {
     ErrorType.T_HDIV: lambda data, sol, **kw: T_hdiv_error(data,sol)
 }
 
-def compute_errors(data: StokesProblemData,solution: StokesSolution, method: MethodType, degree_rise: int = 3) -> Dict[ErrorType, float] :
+def compute_errors(data: StokesProblemData,solution: StokesSolution, method: MethodType, degree_rise: int = 3) -> Dict[ErrorType, float]:
     errs = {}
     for norm in method.accepted_norms:
         errs[norm] = ERROR_DISPATCHER[norm](data,solution,degree_rise=degree_rise)

@@ -3,8 +3,6 @@ from enum import Enum
 
 class ErrorType(str, Enum):
     """Supported Sobolev and Lebesgue discretization error norm metrics.
-
-    Inherits from (str, Enum) for direct dictionary key compatibility,
     """
 
     U_L2 = "u_l2"
@@ -39,9 +37,6 @@ class ErrorType(str, Enum):
 
 class MethodType(str, Enum):
     """Enumeration of supported mixed finite element spatial discretizations.
-
-    Inherits from (str, Enum) to ensure seamless serialization, terminal output,
-    and dictionary key usage across metrics and plotting modules.
     """
 
     TH = "Taylor-Hood"

@@ -26,6 +26,8 @@ class StandardPrimalSolver(StokesSolver):
 
         Args:
             data (StokesProblemData): Computational domain, boundary markers, and data.
+            strategy (SolverStrategy): the strategy used to solve the system
+                (e.g, LinearStrategy,NewtonStrategy,PicardStrategy)
 
         Returns:
             StokesSolution: Solution container holding velocity, pressure, and the raw state.

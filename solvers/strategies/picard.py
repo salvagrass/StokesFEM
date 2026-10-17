@@ -2,6 +2,7 @@ from .base import SolverStrategy
 from fenics import solve
 
 class PicardStrategy(SolverStrategy):
+    """Solves nonlinear systems via fixed-point Picard iteration."""
     def __init__(self,
                  mu_guess: float = 1.0,
                  quad_points: int = 6,
@@ -10,6 +11,16 @@ class PicardStrategy(SolverStrategy):
                  rel_tol: float = 1e-2,
                  raise_error: bool = True               
                  ):
+        """Initializes the Picard solver strategy.
+
+        Args:
+            mu_guess: Constant viscosity value for the initial guess.
+            quad_points: Quadrature degree for numerical integration.
+            num_iter: Maximum number of Picard iterations.
+            abs_tol: Absolute l2 error convergence tolerance.
+            rel_tol: Relative l2 error convergence tolerance.
+            raise_error: If True, raises RuntimeError when iterations exceed num_iter.
+        """
         self.mu_guess = float(mu_guess)
         self.quad_points = int(quad_points)
         self.num_iter = int(num_iter)
@@ -19,7 +30,17 @@ class PicardStrategy(SolverStrategy):
 
 
 
-    def solve_system(self, build_system,state,bcs):
+    def solve_system(self, build_system,state,bcs) -> None:
+        """Executes fixed-point Picard iterations on the variational system.
+
+        Args:
+            build_system: Callback returning (lhs, rhs) forms given state and viscosity.
+            state: Solution state container updated in-place.
+            bcs: Dirichlet boundary conditions enforced on the system.
+
+        Raises:
+            RuntimeError: If convergence criteria are not satisfied within num_iter.
+        """
         
         # Solving with initial guess
         mu_init = lambda u: self.mu_guess

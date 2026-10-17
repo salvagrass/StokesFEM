@@ -6,13 +6,13 @@ from commons import PowerLawModel
 
 import os
 
-OUTPUT_DIR = "results/obstacle"
+OUTPUT_DIR = "assets/"
 
 def test_obstacle():
     # Generating the problem 
     problem_data = generate_problem(n=64)
-    model = PowerLawModel(K=0.5,r=4)
-    strategy = HybridStrategy()
+    model = PowerLawModel(K=0.5,r=3.0)
+    strategy = NewtonStrategy(mu_guess=0.2)
 
     # Getting the list of available methods
     methods = [MethodType.TH]
@@ -35,13 +35,14 @@ def test_obstacle():
         fig, axes = plots.plot_combined(
             solution=solution,
             mode='streamlines',
-            title_prefix= f"{method} - Power Law K=0.5, r=4 ",
-            layout='vertical'
+            title_prefix= f"{method} - Power Law K=0.5, r=3.0 ",
+            layout='horizontal'
             )
 
         print(f"Saving the graph for {method} in {OUTPUT_DIR}")
         save_path = f"{OUTPUT_DIR}/obstacle_{method}.png"
-        fig.savefig(save_path,dpi=300)
+        fig.tight_layout()
+        fig.savefig(save_path,dpi=300,bbox_inches="tight",pad_inches =0.1)
 
 if __name__ == "__main__":
     test_obstacle()
